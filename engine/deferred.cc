@@ -197,13 +197,18 @@ void Renderer::RemovePostProcessingMaterial(Material* postProcessingMaterial) {
 	}
 }
 
-void Renderer::BindGBuffer() {
+void Renderer::BindGBuffer(Shader* shader) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, this->positionBuffer);
+	shader->SetInt("g_worldPos", 0);
+
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, this->normalBuffer);
+	shader->SetInt("g_normal", 1);
+
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, this->albedoSpecBuffer);
+	shader->SetInt("g_albedoSpec", 2);
 }
 
 void Renderer::UnbindGBuffer() {
@@ -549,7 +554,7 @@ void Renderer::DrawLightMeshes(Camera& camera) {
 	if (this->pointLights.size() > 0) {
 		// provide shader with access to the geometry buffers
 		this->pointLightMeshShader->Use();
-		this->BindGBuffer();
+		this->BindGBuffer(this->pointLightMeshShader);
 
 		this->pointLightMeshShader->SetVec3("u_camWorldPos", camera.transform.WorldPosition());
 		const glm::mat4& VP = camera.VP;
@@ -603,7 +608,7 @@ void Renderer::DrawLightMeshes(Camera& camera) {
 	if (this->spotLights.size() > 0) {
 		// provide shader with access to the geometry buffers
 		this->spotLightMeshShader->Use();
-		this->BindGBuffer();
+		this->BindGBuffer(this->spotLightMeshShader);
 
 		this->spotLightMeshShader->SetVec3("u_camWorldPos", camera.transform.WorldPosition());
 		const glm::mat4& VP = camera.VP;
@@ -687,7 +692,7 @@ void Renderer::DrawDirectionalLight(Camera& camera) {
 	this->directionalLightShader->SetFloat("u_intensity", this->directionalLight->intensity);
 
 	// provide shader with access to the geometry buffers
-	this->BindGBuffer();
+	this->BindGBuffer(this->directionalLightShader);
 
 	this->screenQuad->Bind();
 	this->screenQuad->Draw(0);
@@ -782,11 +787,15 @@ void Renderer::DrawToMainFramebuffer() {
 
 	// draw the final color texture to the screen
 	this->finalColorShader->Use();
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, this->finalColorBuffer);
+	this->finalColorShader->SetInt("u_texture", 0);
+
 	this->screenQuad->Bind();
 	this->screenQuad->Draw(0);
 	this->screenQuad->Unbind();
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 	this->finalColorShader->StopUsing();
 }
@@ -815,10 +824,12 @@ void Renderer::DrawPostProcessing(Camera& camera) {
 		if (i % 2 == 0) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, this->finalColorBuffer);
+			material->shader->SetInt("t_color", 0);
 		}
 		else {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, this->postProcessingBuffer);
+			material->shader->SetInt("t_color", 0);
 		}
 
 
@@ -851,7 +862,10 @@ void Renderer::DrawPostProcessing(Camera& camera) {
 		this->finalColorShader->Use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, this->postProcessingBuffer);
+		this->finalColorShader->SetInt("u_texture", 0);
+
 		this->screenQuad->Draw(0);
+
 		glBindTexture(GL_TEXTURE_2D, 0);
 		this->finalColorShader->StopUsing();
 

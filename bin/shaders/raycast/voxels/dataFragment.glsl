@@ -1,8 +1,8 @@
-#version 430
+#version 410
 
 layout(location=0) in vec2 v_position;
 
-layout(binding=0) uniform usampler3D voxelTexture;
+uniform usampler3D voxelTexture;
 
 uniform float u_aspect;
 uniform float u_tan_half_fovy;

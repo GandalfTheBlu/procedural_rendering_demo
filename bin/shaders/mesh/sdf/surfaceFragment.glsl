@@ -1,4 +1,4 @@
-#version 430
+#version 410
 
 layout(location=0) in mat3 v_TBN;
 layout(location=9) in vec2 v_uv;

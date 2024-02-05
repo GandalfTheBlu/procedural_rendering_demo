@@ -91,7 +91,7 @@ private:
 	std::vector<Material*> postProcessingMaterials;
 
 	void CreatePostProcessingFramebuffer();
-	void BindGBuffer();
+	void BindGBuffer(Shader* shader);
 	void UnbindGBuffer();
 
 	std::unordered_map<Shader*, std::vector<RenderNode>>& GetRenderNodeContainer(Material::RenderType renderType);

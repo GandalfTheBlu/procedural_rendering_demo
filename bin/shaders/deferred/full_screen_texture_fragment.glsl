@@ -1,6 +1,6 @@
-#version 430
+#version 410
 
-layout(binding=0) uniform sampler2D u_texture;
+uniform sampler2D u_texture;
 
 layout(location=0) in vec2 v_uv;
 
